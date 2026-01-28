@@ -1,43 +1,202 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
+    
+    <!-- SEO 메타 태그 -->
+    <meta name="description" content="인천공항 주차대행 No.1 플랫폼 PARKING 24. 최대 270일 전 예약 가능, 즉시 확정, 무료 취소. 실내주차, 세차, 핸들살균 서비스 제공" />
+    <meta name="keywords" content="공항주차, 인천공항주차, 주차대행, 발렛파킹, 공항주차장, Tesla주차, BMW주차, PARKING24, 인천공항, 장기주차, 공항발렛" />
+    <meta name="author" content="PARKING 24" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph 메타 태그 (Facebook, KakaoTalk) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PARKING 24 - 인천공항 주차대행 No.1 플랫폼" />
+    <meta property="og:description" content="공항 주차는 PARKING 24. 실내주차, 세차, 핸들살균 서비스 제공" />
+    <meta property="og:image" content="https://www.parking24.me/og-image.webp" />
+    <meta property="og:url" content="https://www.parking24.me" />
+    <meta property="og:site_name" content="PARKING 24" />
+    <meta property="og:locale" content="ko_KR" />
+    
+    <!-- Twitter 카드 -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PARKING 24 - 인천공항 주차대행 No.1 플랫폼" />
+    <meta name="twitter:description" content="공항 주차는 PARKING 24" />
+    <meta name="twitter:image" content="https://www.parking24.me/og-image.webp" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.parking24.me/" />
+    
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://firestore.googleapis.com" />
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+    
+    <!-- 폰트 프리로드 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Inline Critical CSS -->
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        background-color: #F5F5F5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      #root { 
+        max-width: 480px; 
+        margin: 0 auto; 
+        background-color: white; 
+        min-height: 100vh; 
+      }
+      
+      /* 로딩 화면 */
+      .app-loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 9999;
+      }
+      .app-loading h1 {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 24px;
+        letter-spacing: -0.5px;
+      }
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #000;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* 로딩 완료 후 페이드아웃 */
+      .app-loading.fade-out {
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+        pointer-events: none;
+      }
+    </style>
+    
+    <!-- 구조화된 데이터 (JSON-LD) for Google Search -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "PARKING 24",
+      "description": "인천공항 주차대행 No.1 플랫폼",
+      "url": "https://www.parking24.me",
+      "telephone": "1234-5678",
+      "email": "support@parking24.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "인천광역시",
+        "addressRegion": "중구",
+        "postalCode": "22382",
+        "addressCountry": "KR",
+        "streetAddress": "공항로 272"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 37.4602,
+        "longitude": 126.4407
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday"
+        ],
+        "opens": "00:00",
+        "closes": "23:59"
+      },
+      "priceRange": "₩₩",
+      "image": "https://www.parking24.me/og-image.webp",
+      "logo": "https://www.parking24.me/logo192.png",
+      "sameAs": [],
+      "areaServed": {
+        "@type": "City",
+        "name": "인천광역시"
+      },
+      "serviceType": "공항 주차대행 서비스",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "주차 이용권",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Standard 주차",
+              "description": "실외 주차장"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Pro 주차",
+              "description": "실내 주차장 우선, 차량 덮개"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Exclusive 주차",
+              "description": "워터프리 세차, 핸들살균 서비스"
+            }
+          }
+        ]
+      }
+    }
+    </script>
+    
+    <title>PARKING 24 - 인천공항 주차대행 No.1 플랫폼</title>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+    <noscript>JavaScript를 활성화해주세요.</noscript>
+    <div id="root">
+      <div class="app-loading">
+        <h1>PARKING 24</h1>
+        <div class="spinner"></div>
+      </div>
+    </div>
+    
+    <script>
+      // 로딩 완료 시 페이드아웃
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var loader = document.querySelector('.app-loading');
+          if (loader) {
+            loader.classList.add('fade-out');
+            setTimeout(function() {
+              loader.remove();
+            }, 300);
+          }
+        }, 100);
+      });
+    </script>
   </body>
 </html>

@@ -1,0 +1,39 @@
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+const db = admin.firestore();
+
+async function addData() {
+  // 이용안내
+  const usageGuides = [
+    { step: 1, title: '예약하기', description: '원하시는 날짜와 공항을 선택하고 주차 플랜을 선택하세요.' },
+    { step: 2, title: '차량 정보 입력', description: '차량번호와 연락처를 입력하세요.' },
+    { step: 3, title: '공항 도착', description: '예약 시간에 맞춰 공항에 도착하시면 발렛 직원이 차량을 인수합니다.' },
+    { step: 4, title: '귀국 후 차량 인수', description: '귀국 후 연락주시면 차량을 인도해드립니다.' }
+  ];
+
+  for (const guide of usageGuides) {
+    await db.collection('usageGuides').add(guide);
+  }
+
+  // FAQ
+  const faqs = [
+    { question: '예약은 언제부터 가능한가요?', answer: '출발일 기준 최대 270일 전부터 예약이 가능합니다.', order: 1 },
+    { question: '취소는 언제까지 가능한가요?', answer: '입차 1일 전까지 무료 취소가 가능합니다.', order: 2 },
+    { question: '결제는 언제 하나요?', answer: '출차 시 현장에서 결제하시면 됩니다.', order: 3 },
+    { question: '차량에 귀중품을 놔둬도 되나요?', answer: '귀중품은 반드시 휴대하시기 바랍니다. 분실 시 책임지지 않습니다.', order: 4 }
+  ];
+
+  for (const faq of faqs) {
+    await db.collection('faqs').add(faq);
+  }
+
+  console.log('데이터 추가 완료');
+  process.exit();
+}
+
+addData();

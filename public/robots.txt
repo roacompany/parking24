@@ -1,3 +1,10 @@
-# https://www.robotstxt.org/robotstxt.html
+# Allow all crawlers
 User-agent: *
-Disallow:
+Allow: /
+
+# Disallow admin pages
+User-agent: *
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://parking24.me/sitemap.xml

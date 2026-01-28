@@ -1,0 +1,5 @@
+<img
+  src="/images/check-icon.png"
+  alt="체크"
+  className="w-5 h-5 flex-shrink-0 mt-0.5"
+/>

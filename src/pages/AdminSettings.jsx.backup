@@ -1,0 +1,907 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { auth, db } from '../config/firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+
+const AdminSettings = () => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('airports');
+  const [loading, setLoading] = useState(true);
+  
+  const [airports, setAirports] = useState([]);
+  const [editingAirport, setEditingAirport] = useState(null);
+  const [newAirport, setNewAirport] = useState({ name: '', code: '', location: '', isActive: true });
+  
+  const [generalPlans, setGeneralPlans] = useState([]);
+  const [editingGeneralPlan, setEditingGeneralPlan] = useState(null);
+  const [newGeneralPlan, setNewGeneralPlan] = useState({
+    nameKo: '',
+    nameEn: '',
+    pricePerDay: 0,
+    features: [],
+    description: '',
+    isActive: true,
+    order: 0
+  });
+
+  const [specialParkings, setSpecialParkings] = useState([]);
+  const [editingSpecial, setEditingSpecial] = useState(null);
+  const [newSpecial, setNewSpecial] = useState({
+    nameKo: '',
+    vehicleType: '',
+    description: '',
+    features: [],
+    isActive: true,
+    order: 0
+  });
+
+  const [selectedSpecialId, setSelectedSpecialId] = useState(null);
+  const [specialPlans, setSpecialPlans] = useState([]);
+  const [editingSpecialPlan, setEditingSpecialPlan] = useState(null);
+
+  useEffect(() => {
+    document.body.classList.add('admin-page');
+    return () => {
+      document.body.classList.remove('admin-page');
+    };
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (selectedSpecialId) {
+      fetchSpecialPlans(selectedSpecialId);
+    }
+  }, [selectedSpecialId]);
+
+  const checkAuth = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      navigate('/admin/login');
+      return;
+    }
+
+    const token = await currentUser.getIdTokenResult();
+    if (!token.claims.admin) {
+      alert('최고 관리자 권한이 필요합니다');
+      navigate('/admin/dashboard');
+      return;
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const airportsSnapshot = await getDocs(collection(db, 'airports'));
+      setAirports(airportsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+      const generalPlansQuery = query(
+        collection(db, 'parkingPlans'),
+        where('specialType', '==', null)
+      );
+      const generalSnapshot = await getDocs(generalPlansQuery);
+      setGeneralPlans(
+        generalSnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+      );
+
+      const specialsSnapshot = await getDocs(collection(db, 'parkingSpecials'));
+      setSpecialParkings(
+        specialsSnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+      );
+
+    } catch (error) {
+      console.error('데이터 로드 실패:', error);
+      alert('데이터를 불러오는데 실패했습니다');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSpecialPlans = async (specialId) => {
+    try {
+      const plansQuery = query(
+        collection(db, 'parkingPlans'),
+        where('specialType', '==', specialId)
+      );
+      const snapshot = await getDocs(plansQuery);
+      setSpecialPlans(
+        snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+      );
+    } catch (error) {
+      console.error('Special Plans 로드 실패:', error);
+    }
+  };
+
+  const handleAddAirport = async () => {
+    if (!newAirport.name || !newAirport.code) {
+      alert('필수 항목을 입력해주세요');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'airports'), {
+        ...newAirport,
+        createdAt: new Date().toISOString()
+      });
+      alert('공항이 추가되었습니다');
+      setNewAirport({ name: '', code: '', location: '', isActive: true });
+      fetchData();
+    } catch (error) {
+      console.error('공항 추가 실패:', error);
+      alert('공항 추가에 실패했습니다');
+    }
+  };
+
+  const handleUpdateAirport = async (airportId) => {
+    try {
+      const { id, ...updateData } = editingAirport;
+      await updateDoc(doc(db, 'airports', airportId), {
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      });
+      alert('공항 정보가 수정되었습니다');
+      setEditingAirport(null);
+      fetchData();
+    } catch (error) {
+      console.error('공항 수정 실패:', error);
+      alert('공항 수정에 실패했습니다');
+    }
+  };
+
+  const handleDeleteAirport = async (airportId) => {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'airports', airportId));
+      alert('공항이 삭제되었습니다');
+      fetchData();
+    } catch (error) {
+      console.error('공항 삭제 실패:', error);
+      alert('공항 삭제에 실패했습니다');
+    }
+  };
+
+  const handleAddGeneralPlan = async () => {
+    if (!newGeneralPlan.nameKo || !newGeneralPlan.pricePerDay) {
+      alert('필수 항목을 입력해주세요');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'parkingPlans'), {
+        ...newGeneralPlan,
+        specialType: null,
+        pricePerDay: Number(newGeneralPlan.pricePerDay),
+        order: Number(newGeneralPlan.order),
+        createdAt: new Date().toISOString()
+      });
+      alert('이용권이 추가되었습니다');
+      setNewGeneralPlan({
+        nameKo: '',
+        nameEn: '',
+        pricePerDay: 0,
+        features: [],
+        description: '',
+        isActive: true,
+        order: 0
+      });
+      fetchData();
+    } catch (error) {
+      console.error('이용권 추가 실패:', error);
+      alert('이용권 추가에 실패했습니다');
+    }
+  };
+
+  const handleUpdateGeneralPlan = async (planId) => {
+    try {
+      const { id, ...updateData } = editingGeneralPlan;
+      await updateDoc(doc(db, 'parkingPlans', planId), {
+        ...updateData,
+        specialType: null,
+        pricePerDay: Number(updateData.pricePerDay),
+        order: Number(updateData.order),
+        updatedAt: new Date().toISOString()
+      });
+      alert('이용권이 수정되었습니다');
+      setEditingGeneralPlan(null);
+      fetchData();
+    } catch (error) {
+      console.error('이용권 수정 실패:', error);
+      alert('이용권 수정에 실패했습니다');
+    }
+  };
+
+  const handleDeleteGeneralPlan = async (planId) => {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'parkingPlans', planId));
+      alert('이용권이 삭제되었습니다');
+      fetchData();
+    } catch (error) {
+      console.error('이용권 삭제 실패:', error);
+      alert('이용권 삭제에 실패했습니다');
+    }
+  };
+
+  const handleAddSpecialParking = async () => {
+    if (!newSpecial.nameKo || !newSpecial.vehicleType) {
+      alert('필수 항목을 입력해주세요');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'parkingSpecials'), {
+        ...newSpecial,
+        createdAt: new Date().toISOString()
+      });
+
+      const defaultPlans = [
+        { nameKo: 'Standard', nameEn: 'Standard', order: 0, pricePerDay: 20000 },
+        { nameKo: 'Pro', nameEn: 'Pro', order: 1, pricePerDay: 30000 },
+        { nameKo: 'Exclusive', nameEn: 'Exclusive', order: 2, pricePerDay: 45000 }
+      ];
+
+      for (const plan of defaultPlans) {
+        await addDoc(collection(db, 'parkingPlans'), {
+          ...plan,
+          specialType: newSpecial.vehicleType,
+          features: [],
+          description: '',
+          isActive: true,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      alert('Special Parking과 기본 이용권이 생성되었습니다');
+      setNewSpecial({
+        nameKo: '',
+        vehicleType: '',
+        description: '',
+        features: [],
+        isActive: true,
+        order: 0
+      });
+      fetchData();
+    } catch (error) {
+      console.error('Special Parking 추가 실패:', error);
+      alert('Special Parking 추가에 실패했습니다');
+    }
+  };
+
+  const handleUpdateSpecialParking = async (specialId) => {
+    try {
+      const { id, ...updateData } = editingSpecial;
+      await updateDoc(doc(db, 'parkingSpecials', specialId), {
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      });
+      alert('Special Parking이 수정되었습니다');
+      setEditingSpecial(null);
+      fetchData();
+    } catch (error) {
+      console.error('수정 실패:', error);
+      alert('수정에 실패했습니다');
+    }
+  };
+
+  const handleDeleteSpecialParking = async (specialId) => {
+    if (!window.confirm('Special Parking과 관련된 모든 이용권이 삭제됩니다. 계속하시겠습니까?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'parkingSpecials', specialId));
+
+      const plansQuery = query(
+        collection(db, 'parkingPlans'),
+        where('specialType', '==', specialId)
+      );
+      const plansSnapshot = await getDocs(plansQuery);
+      
+      for (const planDoc of plansSnapshot.docs) {
+        await deleteDoc(doc(db, 'parkingPlans', planDoc.id));
+      }
+
+      alert('Special Parking과 관련 이용권이 삭제되었습니다');
+      fetchData();
+    } catch (error) {
+      console.error('삭제 실패:', error);
+      alert('삭제에 실패했습니다');
+    }
+  };
+
+  const handleUpdateSpecialPlan = async (planId) => {
+    try {
+      const { id, ...updateData } = editingSpecialPlan;
+      await updateDoc(doc(db, 'parkingPlans', planId), {
+        ...updateData,
+        pricePerDay: Number(updateData.pricePerDay),
+        order: Number(updateData.order),
+        updatedAt: new Date().toISOString()
+      });
+      alert('이용권이 수정되었습니다');
+      setEditingSpecialPlan(null);
+      fetchSpecialPlans(selectedSpecialId);
+    } catch (error) {
+      console.error('수정 실패:', error);
+      alert('수정에 실패했습니다');
+    }
+  };
+
+  const handleDeleteSpecialPlan = async (planId) => {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'parkingPlans', planId));
+      alert('이용권이 삭제되었습니다');
+      fetchSpecialPlans(selectedSpecialId);
+    } catch (error) {
+      console.error('삭제 실패:', error);
+      alert('삭제에 실패했습니다');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <header className="bg-white shadow sticky top-0 z-10">
+        <div className="px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl lg:text-2xl font-bold">설정</h1>
+            <button
+              onClick={() => navigate('/admin/dashboard')}
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+            >
+              ← 대시보드
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="px-6 lg:px-8 py-6 lg:py-8">
+      </main>
+      <div className="bg-white rounded-xl shadow mb-6">
+          <div className="border-b overflow-x-auto">
+            <nav className="flex">
+              <button
+                onClick={() => setActiveTab('airports')}
+                className={`px-6 py-4 text-sm font-medium whitespace-nowrap ${
+                  activeTab === 'airports'
+                    ? 'border-b-2 border-black text-black'
+                    : 'text-gray-600 hover:text-black'
+                }`}
+              >
+                공항 관리
+              </button>
+              <button
+                onClick={() => setActiveTab('general-plans')}
+                className={`px-6 py-4 text-sm font-medium whitespace-nowrap ${
+                  activeTab === 'general-plans'
+                    ? 'border-b-2 border-black text-black'
+                    : 'text-gray-600 hover:text-black'
+                }`}
+              >
+                일반 이용권
+              </button>
+              <button
+                onClick={() => setActiveTab('special-parking')}
+                className={`px-6 py-4 text-sm font-medium whitespace-nowrap ${
+                  activeTab === 'special-parking'
+                    ? 'border-b-2 border-black text-black'
+                    : 'text-gray-600 hover:text-black'
+                }`}
+              >
+                Special Parking
+              </button>
+            </nav>
+          </div>
+
+          <div className="p-6">
+            {activeTab === 'airports' && (
+              <div>
+                <h2 className="text-lg font-bold mb-4">공항 추가</h2>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <input
+                    type="text"
+                    placeholder="공항명"
+                    value={newAirport.name}
+                    onChange={(e) => setNewAirport({ ...newAirport, name: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="코드"
+                    value={newAirport.code}
+                    onChange={(e) => setNewAirport({ ...newAirport, code: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="위치"
+                    value={newAirport.location}
+                    onChange={(e) => setNewAirport({ ...newAirport, location: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <button
+                    onClick={handleAddAirport}
+                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                  >
+                    추가
+                  </button>
+                </div>
+
+                <h2 className="text-lg font-bold mb-4">공항 목록</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">공항명</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">코드</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">위치</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">상태</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {airports.map(airport => (
+                        <tr key={airport.id}>
+                          {editingAirport?.id === airport.id ? (
+                            <>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="text"
+                                  value={editingAirport.name}
+                                  onChange={(e) => setEditingAirport({ ...editingAirport, name: e.target.value })}
+                                  className="px-2 py-1 border rounded w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="text"
+                                  value={editingAirport.code}
+                                  onChange={(e) => setEditingAirport({ ...editingAirport, code: e.target.value })}
+                                  className="px-2 py-1 border rounded w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="text"
+                                  value={editingAirport.location}
+                                  onChange={(e) => setEditingAirport({ ...editingAirport, location: e.target.value })}
+                                  className="px-2 py-1 border rounded w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <select
+                                  value={editingAirport.isActive}
+                                  onChange={(e) => setEditingAirport({ ...editingAirport, isActive: e.target.value === 'true' })}
+                                  className="px-2 py-1 border rounded"
+                                >
+                                  <option value="true">활성</option>
+                                  <option value="false">비활성</option>
+                                </select>
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => handleUpdateAirport(airport.id)}
+                                  className="text-blue-600 hover:text-blue-800 mr-2"
+                                >
+                                  저장
+                                </button>
+                                <button
+                                  onClick={() => setEditingAirport(null)}
+                                  className="text-gray-600 hover:text-gray-800"
+                                >
+                                  취소
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="px-4 py-3 text-sm">{airport.name}</td>
+                              <td className="px-4 py-3 text-sm">{airport.code}</td>
+                              <td className="px-4 py-3 text-sm">{airport.location}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-1 text-xs rounded ${airport.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                  {airport.isActive ? '활성' : '비활성'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => setEditingAirport(airport)}
+                                  className="text-blue-600 hover:text-blue-800 mr-2"
+                                >
+                                  수정
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteAirport(airport.id)}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  삭제
+                                </button>
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'general-plans' && (
+              <div>
+                <h2 className="text-lg font-bold mb-4">일반 이용권 추가</h2>
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+                  <input
+                    type="text"
+                    placeholder="이름(한글)"
+                    value={newGeneralPlan.nameKo}
+                    onChange={(e) => setNewGeneralPlan({ ...newGeneralPlan, nameKo: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="이름(영문)"
+                    value={newGeneralPlan.nameEn}
+                    onChange={(e) => setNewGeneralPlan({ ...newGeneralPlan, nameEn: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="number"
+                    placeholder="1일 가격"
+                    value={newGeneralPlan.pricePerDay}
+                    onChange={(e) => setNewGeneralPlan({ ...newGeneralPlan, pricePerDay: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="설명"
+                    value={newGeneralPlan.description}
+                    onChange={(e) => setNewGeneralPlan({ ...newGeneralPlan, description: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="number"
+                    placeholder="순서"
+                    value={newGeneralPlan.order}
+                    onChange={(e) => setNewGeneralPlan({ ...newGeneralPlan, order: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <button
+                    onClick={handleAddGeneralPlan}
+                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                  >
+                    추가
+                  </button>
+                </div>
+
+                <h2 className="text-lg font-bold mb-4">일반 이용권 목록</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">이름(한글)</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">이름(영문)</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">1일 가격</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">설명</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">순서</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">상태</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {generalPlans.map(plan => (
+                        <tr key={plan.id}>
+                          {editingGeneralPlan?.id === plan.id ? (
+                            <>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="text"
+                                  value={editingGeneralPlan.nameKo}
+                                  onChange={(e) => setEditingGeneralPlan({ ...editingGeneralPlan, nameKo: e.target.value })}
+                                  className="px-2 py-1 border rounded w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="text"
+                                  value={editingGeneralPlan.nameEn}
+                                  onChange={(e) => setEditingGeneralPlan({ ...editingGeneralPlan, nameEn: e.target.value })}
+                                  className="px-2 py-1 border rounded w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="number"
+                                  value={editingGeneralPlan.pricePerDay}
+                                  onChange={(e) => setEditingGeneralPlan({ ...editingGeneralPlan, pricePerDay: e.target.value })}
+                                  className="px-2 py-1 border rounded w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="text"
+                                  value={editingGeneralPlan.description || ''}
+                                  onChange={(e) => setEditingGeneralPlan({ ...editingGeneralPlan, description: e.target.value })}
+                                  className="px-2 py-1 border rounded w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="number"
+                                  value={editingGeneralPlan.order}
+                                  onChange={(e) => setEditingGeneralPlan({ ...editingGeneralPlan, order: e.target.value })}
+                                  className="px-2 py-1 border rounded w-24"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <select
+                                  value={editingGeneralPlan.isActive}
+                                  onChange={(e) => setEditingGeneralPlan({ ...editingGeneralPlan, isActive: e.target.value === 'true' })}
+                                  className="px-2 py-1 border rounded"
+                                >
+                                  <option value="true">활성</option>
+                                  <option value="false">비활성</option>
+                                </select>
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => handleUpdateGeneralPlan(plan.id)}
+                                  className="text-blue-600 hover:text-blue-800 mr-2"
+                                >
+                                  저장
+                                </button>
+                                <button
+                                  onClick={() => setEditingGeneralPlan(null)}
+                                  className="text-gray-600 hover:text-gray-800"
+                                >
+                                  취소
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="px-4 py-3 text-sm">{plan.nameKo}</td>
+                              <td className="px-4 py-3 text-sm">{plan.nameEn}</td>
+                              <td className="px-4 py-3 text-sm">₩{plan.pricePerDay?.toLocaleString()}</td>
+                              <td className="px-4 py-3 text-sm">{plan.description}</td>
+                              <td className="px-4 py-3 text-sm">{plan.order}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-1 text-xs rounded ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                  {plan.isActive ? '활성' : '비활성'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => setEditingGeneralPlan(plan)}
+                                  className="text-blue-600 hover:text-blue-800 mr-2"
+                                >
+                                  수정
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteGeneralPlan(plan.id)}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  삭제
+                                </button>
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'special-parking' && (
+              <div>
+                <h2 className="text-lg font-bold mb-4">Special Parking 추가</h2>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-blue-800">
+                    ⓘ Special Parking 생성 시 Standard, Pro, Exclusive 이용권이 자동으로 생성됩니다
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                  <input
+                    type="text"
+                    placeholder="이름 (예: Tesla 전용)"
+                    value={newSpecial.nameKo}
+                    onChange={(e) => setNewSpecial({ ...newSpecial, nameKo: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="타입 (예: tesla)"
+                    value={newSpecial.vehicleType}
+                    onChange={(e) => setNewSpecial({ ...newSpecial, vehicleType: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="설명"
+                    value={newSpecial.description}
+                    onChange={(e) => setNewSpecial({ ...newSpecial, description: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="number"
+                    placeholder="순서"
+                    value={newSpecial.order}
+                    onChange={(e) => setNewSpecial({ ...newSpecial, order: e.target.value })}
+                    className="px-4 py-2 border rounded-lg"
+                  />
+                  <button
+                    onClick={handleAddSpecialParking}
+                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                  >
+                    추가
+                  </button>
+                </div>
+
+                <h2 className="text-lg font-bold mb-4">Special Parking 목록</h2>
+                <div className="space-y-6">
+                  {specialParkings.map(special => (
+                    <div key={special.id} className="border rounded-lg p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold">{special.nameKo}</h3>
+                          <p className="text-sm text-gray-600">{special.description}</p>
+                          <p className="text-xs text-gray-500 mt-1">타입: {special.vehicleType}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setEditingSpecial(special)}
+                            className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          >
+                            수정
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSpecialParking(special.id)}
+                            className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            삭제
+                          </button>
+                          <button
+                            onClick={() => setSelectedSpecialId(selectedSpecialId === special.vehicleType ? null : special.vehicleType)}
+                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                          >
+                            {selectedSpecialId === special.vehicleType ? '접기' : '이용권 관리'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {selectedSpecialId === special.vehicleType && (
+                        <div className="mt-4 pt-4 border-t">
+                          <h4 className="font-bold mb-3">전용 이용권 목록</h4>
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">이름</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">1일 가격</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">설명</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">순서</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">상태</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">관리</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y">
+                                {specialPlans.map(plan => (
+                                  <tr key={plan.id}>
+                                    {editingSpecialPlan?.id === plan.id ? (
+                                      <>
+                                        <td className="px-4 py-3 text-sm">{plan.nameKo}</td>
+                                        <td className="px-4 py-3">
+                                          <input
+                                            type="number"
+                                            value={editingSpecialPlan.pricePerDay}
+                                            onChange={(e) => setEditingSpecialPlan({ ...editingSpecialPlan, pricePerDay: e.target.value })}
+                                            className="px-2 py-1 border rounded w-full"
+                                          />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <input
+                                            type="text"
+                                            value={editingSpecialPlan.description || ''}
+                                            onChange={(e) => setEditingSpecialPlan({ ...editingSpecialPlan, description: e.target.value })}
+                                            className="px-2 py-1 border rounded w-full"
+                                          />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <input
+                                            type="number"
+                                            value={editingSpecialPlan.order}
+                                            onChange={(e) => setEditingSpecialPlan({ ...editingSpecialPlan, order: e.target.value })}
+                                            className="px-2 py-1 border rounded w-20"
+                                          />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <select
+                                            value={editingSpecialPlan.isActive}
+                                            onChange={(e) => setEditingSpecialPlan({ ...editingSpecialPlan, isActive: e.target.value === 'true' })}
+                                            className="px-2 py-1 border rounded"
+                                          >
+                                            <option value="true">활성</option>
+                                            <option value="false">비활성</option>
+                                          </select>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <button
+                                            onClick={() => handleUpdateSpecialPlan(plan.id)}
+                                            className="text-blue-600 hover:text-blue-800 mr-2"
+                                          >
+                                            저장
+                                          </button>
+                                          <button
+                                            onClick={() => setEditingSpecialPlan(null)}
+                                            className="text-gray-600 hover:text-gray-800"
+                                          >
+                                            취소
+                                          </button>
+                                        </td>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <td className="px-4 py-3 text-sm font-medium">{plan.nameKo}</td>
+                                        <td className="px-4 py-3 text-sm">₩{plan.pricePerDay?.toLocaleString()}</td>
+                                        <td className="px-4 py-3 text-sm">{plan.description}</td>
+                                        <td className="px-4 py-3 text-sm">{plan.order}</td>
+                                        <td className="px-4 py-3">
+                                          <span className={`px-2 py-1 text-xs rounded ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                            {plan.isActive ? '활성' : '비활성'}
+                                          </span>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <button
+                                            onClick={() => setEditingSpecialPlan(plan)}
+                                            className="text-blue-600 hover:text-blue-800 mr-2"
+                                          >
+                                            수정
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteSpecialPlan(plan.id)}
+                                            className="text-red-600 hover:text-red-800"
+                                          >
+                                            삭제
+                                          </button>
+                                        </td>
+                                      </>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+export default AdminSettings;

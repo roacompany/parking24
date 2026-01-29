@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -148,6 +149,10 @@ const FAQ = () => {
         description="인천공항 주차대행 서비스 이용 관련 자주 묻는 질문과 답변"
         url="https://www.parking24.me/faq"
       />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: '자주 묻는 질문', url: '/faq' }
+      ]} />
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify(faqStructuredData)}

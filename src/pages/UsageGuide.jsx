@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -17,6 +18,10 @@ const UsageGuide = () => {
         description="PARKING 24 주차대행 서비스 예약부터 출차까지 이용 방법 안내"
         url="https://www.parking24.me/usage-guide"
       />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: '이용 안내', url: '/usage-guide' }
+      ]} />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

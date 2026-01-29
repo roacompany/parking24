@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Button from '../components/common/Button';
@@ -69,6 +70,10 @@ const CustomerService = () => {
         description="문의사항이 있으신가요? 고객센터로 연락주세요"
         url="https://www.parking24.me/customer-service"
       />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: '고객센터', url: '/customer-service' }
+      ]} />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

@@ -2,6 +2,10 @@
 User-agent: *
 Allow: /
 
+# Naver crawler
+User-agent: Yeti
+Allow: /
+
 # Disallow admin pages
 User-agent: *
 Disallow: /admin/

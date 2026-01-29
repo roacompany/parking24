@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -8,6 +9,11 @@ const PrivacyPolicy = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="개인정보처리방침 | PARKING 24"
+        description="PARKING 24 개인정보 수집 및 이용 정책"
+        url="https://www.parking24.me/privacy-policy"
+      />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

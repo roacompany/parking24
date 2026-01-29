@@ -4,6 +4,7 @@ import { db } from '../config/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { calculateDays } from '../utils/dateUtils';
 
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import StepIndicator from '../components/layout/StepIndicator';
@@ -124,6 +125,12 @@ const VehicleInfo = () => {
   if (loading) {
     return (
       <>
+        <SEO
+          title="차량 정보 입력 | PARKING 24"
+          description="차량 번호와 연락처를 입력하고 주차 요금제를 선택하세요"
+          url="https://www.parking24.me/vehicle-info"
+          noindex={true}
+        />
         <Header onMenuClick={() => setIsDrawerOpen(true)} />
         <StepIndicator currentStep={2} />
         <LoadingSpinner />
@@ -133,6 +140,12 @@ const VehicleInfo = () => {
 
   return (
     <div className="min-h-screen bg-white pb-24">
+      <SEO
+        title="차량 정보 입력 | PARKING 24"
+        description="차량 번호와 연락처를 입력하고 주차 요금제를 선택하세요"
+        url="https://www.parking24.me/vehicle-info"
+        noindex={true}
+      />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer 
         isOpen={isDrawerOpen} 

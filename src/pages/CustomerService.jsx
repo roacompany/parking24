@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Button from '../components/common/Button';
@@ -63,6 +64,11 @@ const CustomerService = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="고객센터 | PARKING 24"
+        description="문의사항이 있으신가요? 고객센터로 연락주세요"
+        url="https://www.parking24.me/customer-service"
+      />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

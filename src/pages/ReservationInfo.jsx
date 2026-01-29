@@ -4,6 +4,7 @@ import { db } from '../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { generateReservationNumber, calculateDays } from '../utils/dateUtils';
 
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import StepIndicator from '../components/layout/StepIndicator';
@@ -102,6 +103,12 @@ const ReservationInfo = () => {
 
   return (
     <div className="min-h-screen bg-white pb-24">
+      <SEO
+        title="예약 정보 확인 | PARKING 24"
+        description="주차 예약 정보를 확인하고 예약자 정보를 입력하세요"
+        url="https://www.parking24.me/reservation-info"
+        noindex={true}
+      />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer 
         isOpen={isDrawerOpen} 

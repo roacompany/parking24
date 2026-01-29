@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -8,6 +9,11 @@ const TermsOfService = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="이용약관 | PARKING 24"
+        description="PARKING 24 서비스 이용약관"
+        url="https://www.parking24.me/terms-of-service"
+      />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

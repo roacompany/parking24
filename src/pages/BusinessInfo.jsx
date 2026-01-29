@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -8,6 +9,11 @@ const BusinessInfo = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="사업자 정보 | PARKING 24"
+        description="PARKING 24 사업자 정보 공개"
+        url="https://www.parking24.me/business-info"
+      />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

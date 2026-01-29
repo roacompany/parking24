@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db } from '../config/firebase';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { differenceInDays } from 'date-fns';
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -90,6 +91,11 @@ const ReservationLookup = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="예약 조회 | PARKING 24"
+        description="예약번호로 주차 예약 내역을 조회하세요"
+        url="https://www.parking24.me/reservation-lookup"
+      />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

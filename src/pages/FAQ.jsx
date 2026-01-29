@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -123,8 +125,34 @@ const FAQ = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  // FAQ 구조화 데이터 생성
+  const faqStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.flatMap(category =>
+      category.items.map(item => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.answer
+        }
+      }))
+    )
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="자주 묻는 질문 | PARKING 24"
+        description="인천공항 주차대행 서비스 이용 관련 자주 묻는 질문과 답변"
+        url="https://www.parking24.me/faq"
+      />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(faqStructuredData)}
+        </script>
+      </Helmet>
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

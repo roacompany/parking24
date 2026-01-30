@@ -8,10 +8,10 @@ const ParkingCard = ({ special }) => {
     navigate(`/special-parking/${special.id}`);
   };
 
-  // 차량 이미지 매핑
+  // 차량 이미지 매핑 (WebP 포맷 사용 - 75% 용량 절감)
   const carImages = {
-    'tesla': '/images/tesla.png',
-    'bmw': '/images/bmw.png'
+    'tesla': '/images/tesla.webp',
+    'bmw': '/images/bmw.webp'
   };
 
   return (
@@ -22,13 +22,17 @@ const ParkingCard = ({ special }) => {
           <p className="text-sm text-gray-600 mb-1">{special.description}</p>
           <p className="text-xs text-gray-600">{special.features.join(', ')}</p>
         </div>
-        
-        {/* 차량 이미지 */}
+
+        {/* 차량 이미지 - lazy loading 적용 */}
         {special.vehicleType && carImages[special.vehicleType] ? (
           <img
             src={carImages[special.vehicleType]}
             alt={special.nameKo}
             className="w-16 h-16 object-contain flex-shrink-0"
+            loading="lazy"
+            decoding="async"
+            width="64"
+            height="64"
           />
         ) : (
           <div className="w-16 h-16 bg-gray-300 rounded-lg flex-shrink-0"></div>

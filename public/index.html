@@ -33,11 +33,15 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     
-    <!-- Preconnect -->
-    <link rel="preconnect" href="https://firestore.googleapis.com" />
+    <!-- Preconnect - Firebase 서비스 (초기 연결 시간 단축) -->
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
     <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
-    
-    <!-- 폰트 프리로드 -->
+    <link rel="dns-prefetch" href="https://firebase.googleapis.com" />
+
+    <!-- 폰트 프리로드 (시스템 폰트 사용으로 외부 폰트 불필요) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     

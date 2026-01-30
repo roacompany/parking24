@@ -5,6 +5,7 @@ import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firesto
 import { addDays } from 'date-fns';
 
 import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -124,14 +125,23 @@ const SpecialParkingDetail = () => {
     'bmw': '/images/bmw.png'
   };
 
+  // SEO 데이터 (Firestore에서 가져오거나 기본값 사용)
+  const seoTitle = specialParking.seoTitle || `${specialParking.nameKo} - PARKING 24`;
+  const seoDescription = specialParking.seoDescription || `${specialParking.description || ''} 전용 주차 공간. 프리미엄 주차 서비스 제공. PARKING 24.`;
+  const seoKeywords = specialParking.seoKeywords || `${specialParking.vehicleType}주차, 전용주차, 공항주차, ${specialParking.nameKo}, 인천공항주차`;
+
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
-        title={`${specialParking.nameKo} - PARKING 24`}
-        description={`${specialParking.description || ''} 전용 주차 공간. 프리미엄 주차 서비스 제공. PARKING 24.`}
-        keywords={`${specialParking.vehicleType}주차, 전용주차, 공항주차, ${specialParking.nameKo}, 인천공항주차`}
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
         url={`https://www.parking24.me/special-parking/${specialId}`}
       />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: specialParking.nameKo, url: `/special-parking/${specialId}` }
+      ]} />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

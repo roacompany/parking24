@@ -1,7 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../config/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
 import { addDays } from 'date-fns';
 
 import SEO from '../components/common/SEO';
@@ -11,7 +9,6 @@ import HeroTitle from '../components/layout/HeroTitle';
 import Button from '../components/common/Button';
 import SectionTitle from '../components/common/SectionTitle';
 import ParkingCard from '../components/common/ParkingCard';
-import LoadingSpinner from '../components/common/LoadingSpinner';
 import { formatDateKorean, formatTime } from '../utils/dateUtils';
 
 // 지연 로딩 컴포넌트 (초기 번들 크기 축소)
@@ -29,10 +26,10 @@ const Home = () => {
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
   const [selectedAirport, setSelectedAirport] = useState(null);
-  
+
   const today = new Date();
   today.setHours(10, 0, 0, 0);
-  
+
   const [startDate, setStartDate] = useState(today);
   const [startTime, setStartTime] = useState(today);
   const [endDate, setEndDate] = useState(addDays(today, 3));
@@ -44,61 +41,53 @@ const Home = () => {
 
   const [parkingSpecials, setParkingSpecials] = useState([]);
   const [benefits, setBenefits] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Firebase 동적 import - 렌더링 차단 없이 데이터 로드
   useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        // Firebase를 동적으로 import (초기 번들에서 제외)
+        const [{ db }, { collection, query, where, getDocs }] = await Promise.all([
+          import('../config/firebase'),
+          import('firebase/firestore')
+        ]);
+
+        // 모든 쿼리를 병렬로 실행
+        const [airportSnapshot, specialsSnapshot, benefitsSnapshot] = await Promise.all([
+          getDocs(query(collection(db, 'airports'), where('isActive', '==', true))),
+          getDocs(query(collection(db, 'parkingSpecials'), where('isActive', '==', true))),
+          getDocs(query(collection(db, 'benefits'), where('isActive', '==', true)))
+        ]);
+
+        if (!airportSnapshot.empty) {
+          setSelectedAirport({
+            id: airportSnapshot.docs[0].id,
+            ...airportSnapshot.docs[0].data()
+          });
+        }
+
+        setParkingSpecials(
+          specialsSnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+        );
+
+        setBenefits(
+          benefitsSnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+        );
+
+      } catch (error) {
+        console.error('데이터 로드 실패:', error);
+      } finally {
+        setDataLoaded(true);
+      }
+    };
+
     fetchInitialData();
   }, []);
-
-  const fetchInitialData = async () => {
-    setLoading(true);
-    try {
-      const airportQuery = query(
-        collection(db, 'airports'),
-        where('isActive', '==', true)
-      );
-      const airportSnapshot = await getDocs(airportQuery);
-      if (!airportSnapshot.empty) {
-        const airportData = {
-          id: airportSnapshot.docs[0].id,
-          ...airportSnapshot.docs[0].data()
-        };
-        setSelectedAirport(airportData);
-      }
-
-      const specialsQuery = query(
-        collection(db, 'parkingSpecials'),
-        where('isActive', '==', true)
-      );
-      const specialsSnapshot = await getDocs(specialsQuery);
-      const specialsData = specialsSnapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-      setParkingSpecials(specialsData);
-
-      const benefitsQuery = query(
-        collection(db, 'benefits'),
-        where('isActive', '==', true)
-      );
-      const benefitsSnapshot = await getDocs(benefitsQuery);
-      const benefitsData = benefitsSnapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-      setBenefits(benefitsData);
-
-    } catch (error) {
-      console.error('데이터 로드 실패:', error);
-      alert('데이터를 불러오는데 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSearch = () => {
     if (!selectedAirport) {
@@ -125,45 +114,12 @@ const Home = () => {
     setEndTime(newEndTime);
   };
 
-  // 스켈레톤 UI - LCP 개선을 위해 로딩 중에도 레이아웃 표시
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white">
-        <SEO
-          title="인천공항 주차대행 예약 - 270일 전 예약, 무료 취소 | PARKING 24"
-          description="인천공항 주차 걱정 끝. 최대 270일 전 예약, 즉시 확정, 입차 전날까지 무료 취소. 실내주차·세차·핸들살균 서비스. 10분 셔틀로 공항까지."
-          keywords="인천공항주차, 공항주차대행, 인천공항주차대행, 공항발렛파킹, Tesla주차, BMW주차, 장기주차, 공항주차예약"
-          url="https://www.parking24.me"
-        />
-        <Header onMenuClick={() => setIsDrawerOpen(true)} />
-        {/* 위치 바 스켈레톤 */}
-        <div className="px-5 py-3 border-b border-gray-100">
-          <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
-        </div>
-        {/* 히어로 타이틀 - 실제 컨텐츠 표시 (LCP) */}
-        <HeroTitle />
-        {/* 날짜 선택 스켈레톤 */}
-        <div className="px-5 space-y-3">
-          <div className="w-full bg-gray-100 rounded-lg h-16 animate-pulse" />
-          <div className="flex items-center justify-center">
-            <div className="w-px h-6 bg-gray-300" />
-          </div>
-          <div className="w-full bg-gray-100 rounded-lg h-16 animate-pulse" />
-        </div>
-        {/* 검색 버튼 스켈레톤 */}
-        <div className="px-5 mt-6">
-          <div className="w-full bg-gray-200 rounded-lg h-12 animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
-        title="PARKING 24 - 인천공항 주차대행 No.1 플랫폼"
-        description="인천공항 주차대행 No.1 플랫폼. 최대 270일 전 예약 가능, 즉시 확정, 무료 취소. Tesla, BMW 전용 주차 서비스."
-        keywords="공항주차, 인천공항주차, 주차대행, 발렛파킹, Tesla주차, BMW주차, 장기주차"
+      <SEO
+        title="인천공항 주차대행 예약 - 270일 전 예약, 무료 취소 | PARKING 24"
+        description="인천공항 주차 걱정 끝. 최대 270일 전 예약, 즉시 확정, 입차 전날까지 무료 취소. 실내주차·세차·핸들살균 서비스. 10분 셔틀로 공항까지."
+        keywords="인천공항주차, 공항주차대행, 인천공항주차대행, 공항발렛파킹, Tesla주차, BMW주차, 장기주차, 공항주차예약"
         url="https://www.parking24.me"
       />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
@@ -173,12 +129,17 @@ const Home = () => {
           onClose={() => setIsDrawerOpen(false)}
         />
       </Suspense>
-      <LocationBar 
+
+      {/* 위치 바 - 데이터 로딩 전에도 표시 */}
+      <LocationBar
         airport={selectedAirport}
         onAirportClick={() => setIsAirportModalOpen(true)}
       />
+
+      {/* 히어로 타이틀 - LCP 요소 */}
       <HeroTitle />
 
+      {/* 날짜 선택 버튼 - 항상 표시 */}
       <div className="px-5 space-y-3">
         <button
           onClick={() => setIsDateModalOpen(true)}
@@ -219,7 +180,8 @@ const Home = () => {
         </Button>
       </div>
 
-      {parkingSpecials.length > 0 && (
+      {/* 전용 주차 공간 - 데이터 로드 후 표시 */}
+      {dataLoaded && parkingSpecials.length > 0 && (
         <div className="mt-12">
           <SectionTitle>전용 주차 공간</SectionTitle>
           <div className="px-5 space-y-4">
@@ -230,7 +192,22 @@ const Home = () => {
         </div>
       )}
 
-      {benefits.length > 0 && (
+      {/* 스켈레톤 - 데이터 로딩 중 */}
+      {!dataLoaded && (
+        <div className="mt-12 px-5 space-y-4">
+          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-4" />
+          <div className="bg-gray-100 rounded-xl p-5 animate-pulse">
+            <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
+            <div className="h-3 w-48 bg-gray-200 rounded" />
+          </div>
+          <div className="bg-gray-100 rounded-xl p-5 animate-pulse">
+            <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
+            <div className="h-3 w-48 bg-gray-200 rounded" />
+          </div>
+        </div>
+      )}
+
+      {dataLoaded && benefits.length > 0 && (
         <div className="px-5 mt-12">
           <Suspense fallback={<div className="h-32" />}>
             <BenefitCard benefits={benefits} />

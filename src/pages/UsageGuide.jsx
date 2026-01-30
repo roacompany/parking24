@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -11,6 +13,15 @@ const UsageGuide = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="이용 안내 - 예약부터 출차까지 3단계 | PARKING 24"
+        description="처음 이용하시나요? 예약→입차→출차 3단계면 끝. 24시간 운영, 10분 간격 무료 셔틀. 누구나 쉽게 이용할 수 있습니다."
+        url="https://www.parking24.me/usage-guide"
+      />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: '이용 안내', url: '/usage-guide' }
+      ]} />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

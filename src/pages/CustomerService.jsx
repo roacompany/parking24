@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Button from '../components/common/Button';
@@ -63,6 +65,15 @@ const CustomerService = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="고객센터 - 24시간 전화·카톡 상담 | PARKING 24"
+        description="도움이 필요하신가요? 24시간 운영 고객센터에서 친절히 안내해드립니다. 전화, 카카오톡, 이메일 모두 가능."
+        url="https://www.parking24.me/customer-service"
+      />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: '고객센터', url: '/customer-service' }
+      ]} />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

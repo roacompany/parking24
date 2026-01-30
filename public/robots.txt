@@ -2,9 +2,13 @@
 User-agent: *
 Allow: /
 
+# Naver crawler
+User-agent: Yeti
+Allow: /
+
 # Disallow admin pages
 User-agent: *
 Disallow: /admin/
 
 # Sitemap location
-Sitemap: https://parking24.me/sitemap.xml
+Sitemap: https://www.parking24.me/sitemap.xml

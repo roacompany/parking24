@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -8,6 +10,15 @@ const CompanyInfo = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="회사 소개 - 인천공항 주차대행 전문 | PARKING 24"
+        description="PARKING 24는 안전과 편리함을 최우선으로 생각합니다. 인천공항 주차대행 전문, 고객의 소중한 차량과 시간을 지킵니다."
+        url="https://www.parking24.me/company-info"
+      />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: '회사 소개', url: '/company-info' }
+      ]} />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

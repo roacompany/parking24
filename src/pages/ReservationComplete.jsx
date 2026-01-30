@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import SEO from '../components/common/SEO';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import Button from '../components/common/Button';
@@ -26,6 +27,12 @@ const ReservationComplete = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="예약 완료 | PARKING 24"
+        description="주차 예약이 완료되었습니다"
+        url="https://www.parking24.me/reservation-complete"
+        noindex={true}
+      />
       <Header onMenuClick={() => {}} />
 
       <div className="px-5 py-8">

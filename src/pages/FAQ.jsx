@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -123,8 +126,38 @@ const FAQ = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  // FAQ 구조화 데이터 생성
+  const faqStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.flatMap(category =>
+      category.items.map(item => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.answer
+        }
+      }))
+    )
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="자주 묻는 질문 - 예약·결제·취소 총정리 | PARKING 24"
+        description="궁금한 점을 바로 해결하세요. 예약 방법, 결제 시점, 취소 규정, 서비스 차이까지. 이용 전 꼭 확인해야 할 질문 모음."
+        url="https://www.parking24.me/faq"
+      />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: '자주 묻는 질문', url: '/faq' }
+      ]} />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(faqStructuredData)}
+        </script>
+      </Helmet>
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

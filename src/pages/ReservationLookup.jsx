@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { db } from '../config/firebase';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { differenceInDays } from 'date-fns';
+import SEO from '../components/common/SEO';
+import BreadcrumbSchema from '../components/common/BreadcrumbSchema';
 import Header from '../components/common/Header';
 import SideDrawer from '../components/layout/SideDrawer';
 import Footer from '../components/common/Footer';
@@ -90,6 +92,15 @@ const ReservationLookup = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="내 예약 조회 - 차량번호로 3초 만에 확인 | PARKING 24"
+        description="차량번호와 연락처만 입력하면 예약 내역 즉시 확인. 예약 변경·취소도 간편하게. 지금 바로 조회해보세요."
+        url="https://www.parking24.me/reservation-lookup"
+      />
+      <BreadcrumbSchema items={[
+        { name: '홈', url: '/' },
+        { name: '예약 조회', url: '/reservation-lookup' }
+      ]} />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />
       <SideDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 

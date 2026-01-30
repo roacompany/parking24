@@ -20,10 +20,6 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const BusinessInfo = lazy(() => import('./pages/BusinessInfo'));
 
-// 환경변수 확인 (디버깅용)
-console.log('🔑 Firebase API Key:', process.env.REACT_APP_FIREBASE_API_KEY);
-console.log('📁 Project ID:', process.env.REACT_APP_FIREBASE_PROJECT_ID);
-
 function App() {
   return (
     <Router>

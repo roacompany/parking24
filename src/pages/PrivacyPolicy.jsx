@@ -11,7 +11,7 @@ const PrivacyPolicy = () => {
     <div className="min-h-screen bg-white">
       <SEO
         title="개인정보처리방침 | PARKING 24"
-        description="PARKING 24 개인정보 수집 및 이용 정책"
+        description="PARKING 24는 고객님의 개인정보를 소중히 보호합니다. 수집·이용·보관·파기 정책 안내."
         url="https://www.parking24.me/privacy-policy"
       />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />

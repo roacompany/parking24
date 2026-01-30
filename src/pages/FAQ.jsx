@@ -145,8 +145,8 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="자주 묻는 질문 | PARKING 24"
-        description="인천공항 주차대행 서비스 이용 관련 자주 묻는 질문과 답변"
+        title="자주 묻는 질문 - 예약·결제·취소 총정리 | PARKING 24"
+        description="궁금한 점을 바로 해결하세요. 예약 방법, 결제 시점, 취소 규정, 서비스 차이까지. 이용 전 꼭 확인해야 할 질문 모음."
         url="https://www.parking24.me/faq"
       />
       <BreadcrumbSchema items={[

@@ -66,8 +66,8 @@ const CustomerService = () => {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="고객센터 | PARKING 24"
-        description="문의사항이 있으신가요? 고객센터로 연락주세요"
+        title="고객센터 - 24시간 전화·카톡 상담 | PARKING 24"
+        description="도움이 필요하신가요? 24시간 운영 고객센터에서 친절히 안내해드립니다. 전화, 카카오톡, 이메일 모두 가능."
         url="https://www.parking24.me/customer-service"
       />
       <BreadcrumbSchema items={[

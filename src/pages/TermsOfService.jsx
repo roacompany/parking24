@@ -10,8 +10,8 @@ const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="이용약관 | PARKING 24"
-        description="PARKING 24 서비스 이용약관"
+        title="서비스 이용약관 | PARKING 24"
+        description="PARKING 24 서비스 이용에 관한 권리와 의무, 책임사항을 안내합니다."
         url="https://www.parking24.me/terms-of-service"
       />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />

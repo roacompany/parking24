@@ -10,8 +10,8 @@ const BusinessInfo = () => {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="사업자 정보 | PARKING 24"
-        description="PARKING 24 사업자 정보 공개"
+        title="사업자 정보 공개 | PARKING 24"
+        description="PARKING 24 사업자등록번호, 통신판매업 신고번호, 대표자 정보를 투명하게 공개합니다."
         url="https://www.parking24.me/business-info"
       />
       <Header onMenuClick={() => setIsDrawerOpen(true)} />

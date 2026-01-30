@@ -93,8 +93,8 @@ const ReservationLookup = () => {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="예약 조회 | PARKING 24"
-        description="예약번호로 주차 예약 내역을 조회하세요"
+        title="내 예약 조회 - 차량번호로 3초 만에 확인 | PARKING 24"
+        description="차량번호와 연락처만 입력하면 예약 내역 즉시 확인. 예약 변경·취소도 간편하게. 지금 바로 조회해보세요."
         url="https://www.parking24.me/reservation-lookup"
       />
       <BreadcrumbSchema items={[

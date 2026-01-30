@@ -14,8 +14,8 @@ const UsageGuide = () => {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="이용 안내 | PARKING 24"
-        description="PARKING 24 주차대행 서비스 예약부터 출차까지 이용 방법 안내"
+        title="이용 안내 - 예약부터 출차까지 3단계 | PARKING 24"
+        description="처음 이용하시나요? 예약→입차→출차 3단계면 끝. 24시간 운영, 10분 간격 무료 셔틀. 누구나 쉽게 이용할 수 있습니다."
         url="https://www.parking24.me/usage-guide"
       />
       <BreadcrumbSchema items={[

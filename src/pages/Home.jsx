@@ -126,10 +126,10 @@ const Home = () => {
   if (loading) {
     return (
       <>
-        <SEO 
-          title="PARKING 24 - 인천공항 주차대행 No.1 플랫폼"
-          description="인천공항 주차대행 No.1 플랫폼. 최대 270일 전 예약 가능, 즉시 확정, 무료 취소. Tesla, BMW 전용 주차 서비스."
-          keywords="공항주차, 인천공항주차, 주차대행, 발렛파킹, Tesla주차, BMW주차, 장기주차"
+        <SEO
+          title="인천공항 주차대행 예약 - 270일 전 예약, 무료 취소 | PARKING 24"
+          description="인천공항 주차 걱정 끝. 최대 270일 전 예약, 즉시 확정, 입차 전날까지 무료 취소. 실내주차·세차·핸들살균 서비스. 10분 셔틀로 공항까지."
+          keywords="인천공항주차, 공항주차대행, 인천공항주차대행, 공항발렛파킹, Tesla주차, BMW주차, 장기주차, 공항주차예약"
           url="https://www.parking24.me"
         />
         <Header onMenuClick={() => setIsDrawerOpen(true)} />
